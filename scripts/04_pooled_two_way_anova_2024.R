@@ -4,9 +4,11 @@ library(tidyverse)
 library(car)
 library(broom)
 
+####ALSO REQUIRED - run the two_way_anova_functions script####
+
 
 ####reading in data
-raw_data_2024 <- read.csv(file = "data/nch-kay_trampling_data_2024.csv", skip = 6, nrows = 280)
+raw_data_2024 <- read.csv(file = "data/nch-kay_trampling_data_2024_raw.csv", skip = 6, nrows = 280)
 
 raw_data_2024[is.na(raw_data_2024)] <- 0
 

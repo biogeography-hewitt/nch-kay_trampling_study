@@ -103,7 +103,7 @@ for (i in sp_list){     #loops through list, creates a visualization for each sp
            scale_x_continuous(breaks = c(0, 0.5, 1.5, 2.5, 3.5, 4.5, 7, 9, 11, 13, 15),
                               labels = c(0, 0.5, 1.5, 2.5, 3.5, 4.5, 7, 9, 11, 13, 15))+
            labs(x = "Distance from trail (m)",
-                y = "Total cover (%)",
+                y = "Percent cover (%)",
                 color = "Transect",
                 title = i) +
            theme_bw() +
@@ -116,15 +116,15 @@ for (i in sp_list){     #loops through list, creates a visualization for each sp
   )
 }
 luepec
-vacova
-phyemp
-casmer
-dipsit
-hietri
-vahatr
-carspe
+
+carnig <- carnig +
+  scale_y_continuous(breaks = c(0, 0.50, 1.00),
+                     labels = c(0, 0.5, 1))
 carnig
-dicranum.spp.
+
+
+
+
 
 raw_pct_cover_transects_panel <- grid.arrange(luepec, vacova, phyemp, casmer, hietri, dipsit, vahatr, carspe, carnig, dicranum.spp.,
              nrow = 5)
