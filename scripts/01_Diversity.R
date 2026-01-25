@@ -89,7 +89,7 @@ preds_rich <- cbind(preds_rich,data_richness[,.N, by = .(treatment,site,trans.pa
   geom_point(position = position_dodge(0.6),data = preds_rich, aes(y = Estimate),pch = 21, size = 4)+
   scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far (<5m)","Trampled"))+
   scale_fill_manual(values = trail_color)+
-  labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Position along\nthe trail",fill = lab_trt)
+  labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Position",fill = lab_trt)
 )
 
 # export
@@ -150,7 +150,7 @@ preds_shannon[,shannon := Estimate]
     geom_point(position = position_dodge(0.6),data = preds_shannon, aes(y = Estimate),pch = 21, size = 4)+
     scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far (<5m)","Trampled"))+
     scale_fill_manual(values = trail_color)+
-    labs(x = "Transect pair", y = "Shannon diversity index", color = lab_trt <- "Position along\nthe trail",fill = lab_trt)
+    labs(x = "Transect pair", y = "Shannon diversity index", color = lab_trt <- "Position",fill = lab_trt)
 )
 
 ggsave(file.path("figure","Fig_Shannon_transect.jpg"),shannon_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
