@@ -5,6 +5,7 @@ library(ggplot2) # plots
 library(stringr) # string manipulation
 library(vegan) # diversity indices computation
 #### how does trampling affect species richness ? ####
+## Initial script by Jeremy Borderieux, UBC For, Dec 2025
 
 ## reading the csv, cleaning some values
 data_t <- fread(file.path("data","Trampling_Data_2024_Clean_nozeros.csv"))
@@ -25,16 +26,16 @@ table(data_long$variable)
 ## compute richness as species present in a subplot, and shannon diversity
 data_richness <- data_long[,.(richness = sum(value!=0), 
                               shannon = diversity(value,"shannon")), by = eval(colnames(data_long)[1:9])]
-data_richness[,altitude_scaled := scale(altitude)] # center and scale the predictor incase we want to use it
-data_richness[,site := substr(transect,1,2)]## getting the site variable back with string manipulation
-data_richness[,transect_pair := paste0(site,"_",str_pad(trans.pair, width=2, side="left", pad="0"))]# naming the transect for plots
+data_richness[,altitude_scaled := scale(altitude)] # center and scale the predictor in case we want to use it
+data_richness[,site := substr(transect,1,2)] ## getting the site variable back with string manipulation
+data_richness[,transect_pair := paste0(site,"_",str_pad(trans.pair, width=2, side="left", pad="0"))] # naming the transect for plots
 
 table(data_richness$transect)
 table(data_richness$treatment)
 table(data_richness$commun)
 table(data_richness$trans.pair)
 
-## the distribution look like poisson or negbinomial
+## the distribution looks like poisson or negbinomial
 ggplot(data_richness,aes(x = richness,fill = transect))+
   facet_wrap(~treatment)+
   geom_histogram(binwidth = 1)+
@@ -43,29 +44,29 @@ ggplot(data_richness,aes(x = richness,fill = transect))+
 ## Bayesian model 
 
 # setting priors, knowledge we know already to aid the fit
-prior_rich <- set_prior("normal(2,0.25)",class = "Intercept") #I already know the mean species richness 
+prior_rich <- set_prior("normal(2,0.25)",class = "Intercept") # I already know the mean species richness 
 # in control plot is around exp(2)
-prior_rich <- c(prior_rich,set_prior("normal(500,20)", class = "shape" ))#I fix the shape paramter very hight to help the 
+prior_rich <- c(prior_rich,set_prior("normal(500,20)", class = "shape" ))# I set the shape parameter very high to help the 
 # covnergence, as this parameter can go to infinity without any improvment of the fit
 
 # 1 means varying intercept(control richness) across site / pair / transect.
 # 1 + treatment means varying effect of treatment across pairs
-model_rich <-  brm(richness ~ treatment  +(1|site) +  (1 + treatment|trans.pair) +(1|transect) ,
+model_rich <-  brm(richness ~ treatment + (1|site) + (1 + treatment|trans.pair) +(1|transect) ,
                                   data = data_richness,
                                   family = negbinomial(), # distribution family
                                   backend = "cmdstanr", # Need to be installed, use backend = "rstan" works aswell
                                   iter = 2000, # number of iteration of the algo per chains (models)
                                   prior = prior_rich, # the priors
                                   warmup = 500, # number of iterations discarded 
-                                  chains = 3, # number of model to fit, they need to converge to a unique solution
+                                  chains = 3, # number of model to fit; they need to converge to a unique solution
                                   cores = 3, # using a CPU core per model to fasten the computation
                                   control = list(adapt_delta = 0.99), # increase the computation time to better estimate parameters, need if divergent transition
-                                  threads = threading(3), # this number can go up or down to fasten computation,
+                                  threads = threading(3), # this number can go up or down to speed up computation,
                                   init = 0, # lower the risk of crash
-                                  file = file.path("model","richness_model_4")) # where the model is stored
+                                  file = file.path("model","richness_model_4")) # where the model is stored [check your dir and delete "_4" if needed]
 # will load the model instead of fitting one if the file already exists
 
-pp_check(model_rich) # posterio predictive check to make sur we fit the real distribution
+pp_check(model_rich) # posterior predictive check to make sure we fit the real distribution
 summary(model_rich) # summary of fixed and random effects
 plot(model_rich) # checking the convergence: fuzzy caterpillar, the chains have converged
 
