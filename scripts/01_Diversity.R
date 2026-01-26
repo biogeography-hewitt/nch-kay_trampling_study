@@ -7,7 +7,7 @@ library(vegan) # diversity indices computation
 #### how does trampling affect species richness ? ####
 
 ## reading the csv, cleaning some values
-data_t <- fread(file.path("nch-kay_trampling_study", "data","Trampling_Data_2024_Clean_nozeros.csv"))
+data_t <- fread(file.path("data","Trampling_Data_2024_Clean_nozeros.csv"))
 data_long <- melt(data_t,id.vars = colnames(data_t)[1:9]) 
 data_long[,value:=ifelse(value == "*","",value)]
 data_long[,value:=ifelse(value == "","0",value)]
