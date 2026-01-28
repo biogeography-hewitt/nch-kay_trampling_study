@@ -8,6 +8,8 @@ library(vegan) # diversity indices computation
 ## Initial script by Jeremy Borderieux, UBC For, Dec 2025
 
 ## reading the csv, cleaning some values
+fg_data <-  fread(file.path("data","species_lifeform.csv"))
+
 data_t <- fread(file.path("data","Trampling_Data_2024_Clean_nozeros.csv"))
 data_long <- melt(data_t,id.vars = colnames(data_t)[1:9]) 
 data_long[,value:=ifelse(value == "*","",value)]
@@ -18,14 +20,12 @@ data_long[,.N,by = variable]
 
 ## removing "species" not of interest
 data_long <- data_long[!variable%in% c("soil","litter","rock","crust","bryosp2","bryosp1"),]
-
-table(data_long$value)
-table(data_long$variable)
+data_long <- merge(data_long,fg_data,by.x = "variable",by.y = "species")
 
 #### Richness ####
 ## compute richness as species present in a subplot, and shannon diversity
 data_richness <- data_long[,.(richness = sum(value!=0), 
-                              shannon = diversity(value,"shannon")), by = eval(colnames(data_long)[1:9])]
+                              shannon = diversity(value,"shannon")), by = eval(colnames(data_long)[2:10])]
 data_richness[,altitude_scaled := scale(altitude)] # center and scale the predictor in case we want to use it
 data_richness[,site := substr(transect,1,2)] ## getting the site variable back with string manipulation
 data_richness[,transect_pair := paste0(site,"_",str_pad(trans.pair, width=2, side="left", pad="0"))] # naming the transect for plots
@@ -156,3 +156,38 @@ preds_shannon[,shannon := Estimate]
 
 ggsave(file.path("figure","Fig_Shannon_transect.jpg"),shannon_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
 
+#### Model Richness per FG ####
+
+data_richness_fg <- data_long[,.(richness = sum(value!=0), 
+                                 shannon = diversity(value,"shannon")), by = eval(c(colnames(data_long)[2:10],"fg"))]
+data_richness_fg[,altitude_scaled := scale(altitude)] # center and scale the predictor in case we want to use it
+data_richness_fg[,site := substr(transect,1,2)] ## getting the site variable back with string manipulation
+data_richness_fg[,transect_pair := paste0(site,"_",str_pad(trans.pair, width=2, side="left", pad="0"))] # naming the transect for plots
+ggplot(data_richness_fg,aes(x = richness,fill = transect))+
+  facet_wrap(~ fg + treatment)+
+  geom_histogram(binwidth = 1,boundary = 0.5)+
+  theme_classic()
+
+inv_logit_scaled(1)
+prior_rich_fg <- set_prior("normal(1,0.5)",class = "Intercept") # the mean species richness per fg is small 
+# in control plot is around exp(2)
+prior_rich_fg <- c(prior_rich_fg,set_prior("normal(200,50)", class = "shape" ))# I set the shape parameter very high to help the 
+# covnergence, as this parameter can go to infinity without any improvment of the fit
+
+
+model_rich_fg <-  brm(richness ~ 0+treatment * fg + (1|site) + (1 + treatment|trans.pair) +(1|transect) ,
+                   data = data_richness_fg,
+                   family = negbinomial(), # distribution family
+                   backend = "cmdstanr", # Need to be installed, use backend = "rstan" works aswell
+                   iter = 2000, # number of iteration of the algo per chains (models)
+                   prior = prior_rich_fg, # the priors
+                   warmup = 500, # number of iterations discarded 
+                   chains = 3, # number of model to fit; they need to converge to a unique solution
+                   cores = 3, # using a CPU core per model to fasten the computation
+                   #control = list(adapt_delta = 0.99), # increase the computation time to better estimate parameters, need if divergent transition
+                   threads = threading(3), # this number can go up or down to speed up computation,
+                   init = 0, # lower the risk of crash
+                   file = file.path("model","richness_model_fg")) 
+pp_check(model_rich_fg) # posterior predictive check to make sure we fit the real distribution
+summary(model_rich_fg) # summary of fixed and random effects
+plot(model_rich_fg) # checking the convergence: fuzzy caterpillar, the chains have converged
