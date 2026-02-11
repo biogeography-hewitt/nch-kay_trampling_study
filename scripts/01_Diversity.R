@@ -72,6 +72,19 @@ plot(model_rich) # checking the convergence: fuzzy caterpillar, the chains have 
 
 sjPlot::plot_model(model_rich,type = "pred",terms = "treatment")
 
+## getting the marginal effect delta
+marginal_effect <- fitted(model_rich,
+       newdata = data.table(treatment = c("far","near")),
+       re_formula = NA,summary = T) 
+marginal_effect ## average species richness per treatment
+marginal_effect <- fitted(model_rich,
+                          newdata = data.table(treatment = c("far","near")),
+                          re_formula = NA,summary = F) 
+
+marginal_distribution <- marginal_effect[,1]-marginal_effect[,2]
+summary(marginal_distribution) ## the average change between treatment
+quantile(marginal_distribution,probs = c(0.05,0.95))
+
 ## getting the model prediction back for every transect
 preds_rich <- fitted(model_rich,
                      newdata = data_richness[,.N, by = .(treatment,site,trans.pair,transect,altitude_scaled)],
@@ -134,6 +147,20 @@ pp_check(model_shannon)+coord_cartesian(xlim = c(0,3))
 summary(model_shannon)
 plot(model_shannon)
 
+## getting the marginal effect delta
+marginal_effect <- fitted(model_shannon,
+                          newdata = data.table(treatment = c("far","near")),
+                          re_formula = NA,summary = T) 
+marginal_effect ## average species richness per treatment
+marginal_effect <- fitted(model_shannon,
+                          newdata = data.table(treatment = c("far","near")),
+                          re_formula = NA,summary = F) 
+
+marginal_distribution <- marginal_effect[,1]-marginal_effect[,2]
+summary(marginal_distribution) ## the average change between treatment
+quantile(marginal_distribution,probs = c(0.05,0.95))
+
+## getting the conditional effect (site-specific)
 preds_shannon <- fitted(model_shannon,
                      newdata = data_richness[,.N, by = .(treatment,site,trans.pair,transect,altitude_scaled)],
                      re_formula = ~  (1 |site) + (1+ treatment|trans.pair)  +(1|transect))
