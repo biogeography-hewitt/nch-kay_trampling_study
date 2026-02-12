@@ -63,7 +63,7 @@ model_rich <-  brm(richness ~ treatment + (1|site) + (1 + treatment|trans.pair) 
                                   control = list(adapt_delta = 0.99), # increase the computation time to better estimate parameters, need if divergent transition
                                   threads = threading(3), # this number can go up or down to speed up computation,
                                   init = 0, # lower the risk of crash
-                                  file = file.path("model","richness_model_4")) # where the model is stored [check your dir and delete "_4" if needed]
+                                  file = file.path("model","richness_model")) # where the model is stored [check your dir and delete "_4" if needed]
 # will load the model instead of fitting one if the file already exists
 
 pp_check(model_rich) # posterior predictive check to make sure we fit the real distribution
