@@ -4,7 +4,7 @@ library(tidyverse)
 library(car)
 library(broom)
 
-####ALSO REQUIRED - run the two_way_anova_functions script####
+####ALSO REQUIRED - run the 03_Anova_functions script####
 
 
 ####reading in data
@@ -42,8 +42,8 @@ raw_data_2024_unpooled_sqrt <- raw_data_2024_unpooled %>%
 
 
 
-most_abundant_forbs <- c("LUEPEC", "VACOVA", "CASMER", "PHYEMP", "DIPSIT")
-most_abundant_grams <- c("CARSPE", "CARNIG", "VAHATR", "DANINT")
+most_abundant_forbs <- c("LUEPEC", "VACOVA", "CASMER", "PHYEMP", "HIETRI")
+most_abundant_grams <- c("CARSPE", "CARNIG", "VAHATR")
 
 
 

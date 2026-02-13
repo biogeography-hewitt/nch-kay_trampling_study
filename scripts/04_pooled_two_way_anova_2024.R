@@ -4,7 +4,7 @@ library(tidyverse)
 library(car)
 library(broom)
 
-####ALSO REQUIRED - run the two_way_anova_functions script####
+####ALSO REQUIRED - run the 03_Anova_functions script####
 
 
 ####reading in data
@@ -49,8 +49,8 @@ raw_data_2024_pooled_sqrt <- raw_data_2024_pooled %>%
 
 
 
-most_abundant_forbs <- c("LUEPEC", "VACOVA", "CASMER", "PHYEMP", "DIPSIT")
-most_abundant_grams <- c("CARSPE", "CARNIG", "VAHATR", "DANINT")
+most_abundant_forbs <- c("LUEPEC", "VACOVA", "CASMER", "PHYEMP", "HIETRI")
+most_abundant_grams <- c("CARSPE", "CARNIG", "VAHATR")
 
 
 
@@ -126,4 +126,16 @@ gram_log_pooled_int_summary_table
 gram_log_pooled_summary_table
 gram_sqrt_pooled_int_summary_table
 gram_sqrt_pooled_summary_table
+
+
+
+####getting specific F-statistics and p-values for appendix table
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "PHYEMP")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "CASMER")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "VACOVA")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "LUEPEC")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "HIETRI")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "VAHATR")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "CARSPE")))
+tidy(aov(pct_cover_analyzed ~ treatcode*site.name, data = filter(raw_data_2024_pooled, species == "CARNIG")))
 
