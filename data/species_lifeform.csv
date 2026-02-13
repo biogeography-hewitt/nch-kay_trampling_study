@@ -1,0 +1,69 @@
+species,fg_full,fg,fg_wide
+antmed,forb,forb,forb
+arnlat,forb,forb,forb
+callep,forb,forb,forb
+caspar,forb,forb,forb
+dipsit,forb,forb,forb
+epiana,forb,forb,forb
+erigla,forb,forb,forb
+hietri,forb,forb,forb
+leppyr,forb,forb,forb
+luepec,forb,forb,forb
+luparc,forb,forb,forb
+mictol,forb,forb,forb
+potfla,forb,forb,forb
+pusocc,forb,forb,forb
+solmul,forb,forb,forb
+tonlya,forb,forb,forb
+valsti,forb,forb,forb
+verwor,forb,forb,forb
+agrcap,Invasivegram,grass,ggrass
+danint,graminoid,grass,ggrass
+poaalp,graminoid,grass,ggrass
+vahatr,graminoid,grass,ggrass
+carhas,graminoid-sedge,grass,gsedge
+carnar,graminoid-sedge,grass,gsedge
+carnig,graminoid-sedge,grass,gsedge
+carspe,graminoid-sedge,grass,gsedge
+schacu,graminoid-rush,grass,grush
+jundru,graminoid-rush,grass,grush
+luzpip,graminoid-rush,grass,grush
+aulpal,bryophyte,bryophyte,bryophyte
+braspp,bryophyte,bryophyte,bryophyte
+bryosp1,bryophyte,bryophyte,bryophyte
+bryosp2,bryophyte,bryophyte,bryophyte
+bucsud,bryophyte,bryophyte,bryophyte
+cerpur,bryophyte,bryophyte,bryophyte
+dicoly,bryophyte,bryophyte,bryophyte
+dicpal,bryophyte,bryophyte,bryophyte
+ditspp,bryophyte,bryophyte,bryophyte
+meilya,bryophyte,bryophyte,bryophyte
+nipelo,bryophyte,bryophyte,bryophyte
+nipmut,bryophyte,bryophyte,bryophyte
+nippyg,bryophyte,bryophyte,bryophyte
+phifon,bryophyte,bryophyte,bryophyte
+pohnut,bryophyte,bryophyte,bryophyte
+polpil,bryophyte,bryophyte,bryophyte
+polspp,bryophyte,bryophyte,bryophyte
+rhysqu,bryophyte,bryophyte,bryophyte
+rhyrob,bryophyte,bryophyte,bryophyte
+scioed,bryophyte,bryophyte,bryophyte
+strcon,bryophyte,bryophyte,bryophyte
+barhat,bryophyte,bryophyte,bryophyte
+lopven,bryophyte,bryophyte,bryophyte
+vacova,deciduous shrub,shrub,dshrub
+casmer,woody evergreen shrub,shrub,eshrub
+gauhum,woody evergreen shrub,shrub,eshrub
+kalmic,woody deciduous shrub,shrub,eshrub
+phyemp,woody evergreen shrub,shrub,eshrub
+phygla,woody evergreen shrub,shrub,eshrub
+phyint,woody evergreen shrub,shrub,eshrub
+salbar,deciduous shrub,shrub,dshrub
+abilas,conifer,conifer,conifer
+tsumer,conifer,conifer,conifer
+crust,crust,crust,crust
+litter,litter,litter,litter
+soilrock,soilrock,soilrock,soilrock
+soil,soil,soil,soil
+rock,rock,rock,rock
+rockcrust,rockcrust,rockcrust,rockcrust
