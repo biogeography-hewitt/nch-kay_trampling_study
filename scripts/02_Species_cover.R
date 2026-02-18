@@ -4,6 +4,7 @@ library(brms) # bayesian model fitting using stan
 library(ggplot2) # plots
 library(stringr) # string manipulation
 library(vegan) # diversity indices computation
+library(ggpubr) # arrange several plots
 #### how does trampling affect species cover ? ####
 data_cover <- data_long
 data_cover[,species := variable];data_cover[,variable := NULL] # renaming
@@ -43,17 +44,14 @@ ggplot(data_cover_trim,aes( x = cover_1, fill = species))+geom_histogram(binwidt
 prior_cover <- set_prior("normal(-3,1)",class = "Intercept",dpar = "mu") # I expect the average plant to be tiny : cover of inv_logit(-3): 0.05 , 5 % cover
 prior_cover <- c(prior_cover,set_prior("normal(10,10)", class = "phi" )) # Setting the shape parameter to be wide to accommodate for the data dispertion
 prior_cover <- c(set_prior("normal(10,10)", class = "phi" )) # Setting the shape parameter to be wide to accommodate for the data dispertion
+prior_cover <- c(prior_cover,set_prior(c("normal(-3,1)","normal(2,1)"),class = "b",coef = "treatmentfar",dpar = c("mu","zi")) )
+prior_cover <- c(prior_cover,set_prior(c("normal(-3,1)","normal(3,1)"),class = "b",coef = "treatmentnear",dpar = c("mu","zi")) )
+
 
 # those are wide prior, so nuch much informations given here
 
-formula_model <- bf(cover_1 ~ treatment + (1|trans.pair) + (1|transect) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species),
-   zi ~   treatment + (1|trans.pair) + (1|transect) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species))
-
-formula_model_fg <- bf(cover_1 ~ treatment + (1|trans.pair) + (1|transect)+ (1 + treatment|fg) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species),
-                    zi ~   treatment + (1|trans.pair) + (1|transect)+ (1 + treatment|fg) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species))
-
-formula_model_fg <- bf(cover_1 ~ 0+ treatment*fg + (1|trans.pair) + (1|transect) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species),
-                       zi ~  0+ treatment*fg + (1|trans.pair) + (1|transect) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species))
+formula_model_fg <- bf(cover_1 ~ 0+ treatment* (0+fg) + (1|trans.pair) + (1|transect) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species),
+                       zi ~  0+ treatment* (0+fg) + (1|trans.pair) + (1|transect) + (1 + treatment|species) + (1|transect:species)+ (1|trans.pair:species))
 
 
 model_cover <- brm(formula_model_fg, # takes a while to compute 
@@ -75,35 +73,53 @@ pp_check(model_cover)+coord_cartesian(xlim = c(0,0.5))
 summary(model_cover)
 plot(model_cover)## parameters converged because the caterpillar are fuzzy
 
+## getting the marginal effect delta
+marginal_effect <- fitted(model_cover,
+                          newdata = data.table(expand.grid(treatment = c("far","near"),fg = c("","",""))),
+                          re_formula = NA,summary = T) 
+marginal_effect ## average species richness per treatment
+marginal_effect <- fitted(model_rich,
+                          newdata = data.table(treatment = c("far","near")),
+                          re_formula = NA,summary = F) 
+
+marginal_distribution <- marginal_effect[,1]-marginal_effect[,2]
+summary(marginal_distribution) ## the average change between treatment
+quantile(marginal_distribution,probs = c(0.05,0.95))
+
+
 ## rough plots to look at the effect of trampling per species
 conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species))
 conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species),dpar = "mu")
 conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species),dpar = "hu")
 
+beautify_marginal_effect <- list(
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far","Trampled")),
+  scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far","Trampled")),
+  scale_x_discrete(limits = c("conifer","shrub","forb","grass","bryophyte"),label =  c("Tree","Shrub","Forb","Graminoid","Bryophyte")),
+  theme_classic()+theme(legend.position = c(0.7,0.8),legend.background = element_blank()),
+  labs(x = "Functional group", y = "Predicted cover (%)",color = lab_trt <- "Position",fill = lab_trt ) )
+
 ## rough plots to look at the general effect of trampling
-conditional_effects(model_cover,effects = c("treatment"),re_formula = NA) # average of prob * cover
-conditional_effects(model_cover,effects = c("treatment"),re_formula = NA,dpar = "mu") # cover
-conditional_effects(model_cover,effects = c("treatment"),re_formula = NA,dpar = "zi")  # prob of absence
+full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
+  beautify_marginal_effect + labs( title = "Full model")# average of prob * cover
+cover_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "mu"),plot = F)[[1]]+
+  beautify_marginal_effect + labs( title = "Cover model")+scale_y_continuous(limits = c(0,0.2)) # cover
+presence_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "zi"),plot = F)[[1]]+
+  beautify_marginal_effect  + labs( title = "Presence model", y = "Predicted probability of absence (%)") +
+  theme(legend.position = c(0.9,0.3))+scale_y_continuous(limits = c(0,1))# prob of absence
+
+
+ggarrange(full_plot,cover_plot,presence_plot,nrow = 2,ncol = 2)
+
+ggsave(file.path("figure","Fig_cover_sp_marginal_effect.jpg"),
+       ggarrange(full_plot,cover_plot,presence_plot,nrow = 3,ncol =1),
+       unit = "cm",width = 18,height = 18,dpi = 300,scale = 1)
 
 ## trick for alphabetical order
 data_cover_trim[,species_order := as.character(species)]
 data_cover_trim[,species_order := str_to_title(species_order)]
 data_cover_trim[,species_order := paste0(substr(species_order,1,3)," ",substr(species_order,4,6))]
 data_cover_trim[,fg_order := factor(fg, levels = c("conifer","shrub","forb","grass","bryophyte")) ]
-
-## getting prediction from the model, only asking for species specific random effects, everything else assumed average
-new_data_for_pred <- data_cover_trim[,.N ,by = .(treatment,species,species_order,fg,fg_order),]
-
-pred_sp <- cbind(new_data_for_pred,fitted(model_cover,
-                  newdata =new_data_for_pred, # no dpar argument : the whole model prob * cover, dpar = "mu" cover, dpar= "zi" probability of absence 
-                  re_formula = ~ (1+treatment|species) ) * 100)
-pred_sp[,Estimate_near := mean(Estimate[treatment == "far"]),by =species ]
-pred_sp[,Estimate_near2 := (round(Estimate_near,5)/2) ,by =fg]
-pred_sp[,Estimate_near2 := str_pad(Estimate_near2,2,pad = "0")]
-
-pred_sp[,fg_order_2 := as.factor(paste0(10-as.numeric(fg_order),"_",Estimate_near2))]
-
-data_cover_trim_plot <- merge(data_cover_trim,pred_sp)
 
 ## dashed lines to divid by fg for plotting
 fg_line <- data_cover_trim[,.N,by = .(fg_order,species_order)][order(fg_order)]
