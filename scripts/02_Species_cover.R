@@ -101,19 +101,23 @@ beautify_marginal_effect <- list(
 
 ## rough plots to look at the general effect of trampling
 full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
-  beautify_marginal_effect + labs( title = "Full model")# average of prob * cover
+  beautify_marginal_effect # average of prob * cover
 cover_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "mu"),plot = F)[[1]]+
   beautify_marginal_effect + labs( title = "Cover model")+scale_y_continuous(limits = c(0,0.2)) # cover
 presence_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "zi"),plot = F)[[1]]+
-  beautify_marginal_effect  + labs( title = "Presence model", y = "Predicted probability of absence (%)") +
-  theme(legend.position = c(0.9,0.3))+scale_y_continuous(limits = c(0,1))# prob of absence
+  beautify_marginal_effect  + labs( title = "Presence model", y = "Predicted probability \nof absence (%)") +
+  theme(legend.position = c(0.86,0.3))+scale_y_continuous(limits = c(0,1))# prob of absence
 
 
 ggarrange(full_plot,cover_plot,presence_plot,nrow = 2,ncol = 2)
 
+ggsave(file.path("figure","Fig_cover_sp_marginal_effect_full.jpg"),
+       full_plot,
+       unit = "cm",width = 9,height = 6,dpi = 300,scale = 1)
+
 ggsave(file.path("figure","Fig_cover_sp_marginal_effect.jpg"),
-       ggarrange(full_plot,cover_plot,presence_plot,nrow = 3,ncol =1),
-       unit = "cm",width = 18,height = 18,dpi = 300,scale = 1)
+       ggarrange(cover_plot,presence_plot,nrow = 1,ncol =2,align = "hv"),
+       unit = "cm",width = 18,height = 6,dpi = 300,scale = 1.125)
 
 ## trick for alphabetical order
 data_cover_trim[,species_order := as.character(species)]
