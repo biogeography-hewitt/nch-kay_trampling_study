@@ -101,12 +101,12 @@ beautify_marginal_effect <- list(
 
 ## rough plots to look at the general effect of trampling
 full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
-  beautify_marginal_effect # average of prob * cover
+  beautify_marginal_effect+scale_y_continuous(labels = c("0","5","10","15")) # average of prob * cover
 cover_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "mu"),plot = F)[[1]]+
-  beautify_marginal_effect + labs( title = "Cover model")+scale_y_continuous(limits = c(0,0.2)) # cover
+  beautify_marginal_effect + labs( title = "Cover model")+scale_y_continuous(limits = c(0,0.2),labels = c("0","5","10","15","20")) # cover
 presence_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "zi"),plot = F)[[1]]+
-  beautify_marginal_effect  + labs( title = "Presence model", y = "Predicted probability \nof absence (%)") +
-  theme(legend.position = c(0.86,0.3))+scale_y_continuous(limits = c(0,1))# prob of absence
+  beautify_marginal_effect  + labs( title = "Presence model", y = "Predicted probability \nof presence (%)") +
+  theme(legend.position = c(0.86,0.8))+scale_y_continuous(limits = c(0,1),transform = "reverse", labels = c("0.00","0.25","0.50","0.75","1.00")[5:1])# prob of absence
 
 
 ggarrange(full_plot,cover_plot,presence_plot,nrow = 2,ncol = 2)
