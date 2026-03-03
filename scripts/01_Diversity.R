@@ -173,7 +173,7 @@ preds_shannon[,shannon := Estimate]
     theme_classic()+
     theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1))+
     geom_jitter(pch = 21, size = 2,alpha = 0.5,
-                position = position_jitterdodge(0.2,0.1,0.6))+
+                position = position_jitterdodge(0.2,0.01,0.6))+
     geom_segment(data = preds_shannon, aes(y = Q2.5, yend = Q97.5),position = position_dodge(0.6))+
     geom_point(position = position_dodge(0.6),data = preds_shannon, aes(y = Estimate),pch = 21, size = 4)+
     scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far (<5m)","Trampled"))+
