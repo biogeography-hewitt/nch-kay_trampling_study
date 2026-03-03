@@ -98,12 +98,12 @@ preds_rich <- cbind(preds_rich,data_richness[,.N, by = .(treatment,site,trans.pa
   theme_classic()+
     theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1))+
   geom_jitter(pch = 21, size = 2,alpha = 0.5,
-              position = position_jitterdodge(0.2,0.1,0.6))+
+              position = position_jitterdodge(0.2,0.05,0.6))+
   geom_segment(data = preds_rich, aes(y = Q2.5, yend = Q97.5),position = position_dodge(0.6))+
   geom_point(position = position_dodge(0.6),data = preds_rich, aes(y = Estimate),pch = 21, size = 4)+
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far (<5m)","Trampled"))+
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Reference","Trampled"))+
   scale_fill_manual(values = trail_color)+
-  labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Position",fill = lab_trt)
+  labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Condition",fill = lab_trt)
 )
 
 # export
@@ -126,7 +126,7 @@ prior_shannon <- set_prior("normal(1,0.25)",class = "Intercept")
 prior_shannon <- c(prior_shannon,set_prior("student_t(3, 0.5, 0.5)", class = "sd", group = "trans.pair"))
 prior_shannon <- c(prior_shannon,set_prior("student_t(3, 0.5, 0.5)", class = "sd", group = "site"))
 prior_shannon <- c(prior_shannon,set_prior("student_t(3, 0.5, 0.5)", class = "sd", group = "transect"))
-prior_shannon <- c(prior_shannon,set_prior("normal(500,300)", class = "shape" ))
+
 
 model_shannon <-  brm(shannon ~ treatment  +(1 |site) +  (1+ treatment|trans.pair) +(1|transect) ,
                    data = data_richness,
@@ -169,6 +169,7 @@ preds_shannon <- fitted(model_shannon,
 preds_shannon <- cbind(preds_shannon,data_richness[,.N, by = .(treatment,site,trans.pair,transect_pair,transect,altitude_scaled)])
 preds_shannon[,shannon := Estimate]
 
+## run the 1st plot first to get the correct labels 
 (shannon_pred_plot <- ggplot(data_richness,aes (x = transect_pair, y = shannon , fill = treatment,group =treatment))+
     theme_classic()+
     theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1))+
@@ -176,9 +177,9 @@ preds_shannon[,shannon := Estimate]
                 position = position_jitterdodge(0.2,0.01,0.6))+
     geom_segment(data = preds_shannon, aes(y = Q2.5, yend = Q97.5),position = position_dodge(0.6))+
     geom_point(position = position_dodge(0.6),data = preds_shannon, aes(y = Estimate),pch = 21, size = 4)+
-    scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far (<5m)","Trampled"))+
+    scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs)+
     scale_fill_manual(values = trail_color)+
-    labs(x = "Transect pair", y = "Shannon diversity index", color = lab_trt <- "Position",fill = lab_trt)
+    labs(x = "Transect pair", y = "Shannon diversity index", color = lab_trt,fill = lab_trt)
 )
 
 ggsave(file.path("figure","Fig_Shannon_transect.jpg"),shannon_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)

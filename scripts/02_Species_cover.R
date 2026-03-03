@@ -93,11 +93,11 @@ conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ 
 conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species),dpar = "hu")
 
 beautify_marginal_effect <- list(
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far","Trampled")),
-  scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far","Trampled")),
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("Reference","Trampled") ),
+  scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs ),
   scale_x_discrete(limits = c("conifer","shrub","forb","grass","bryophyte"),label =  c("Tree","Shrub","Forb","Graminoid","Bryophyte")),
   theme_classic()+theme(legend.position = c(0.7,0.8),legend.background = element_blank()),
-  labs(x = "Functional group", y = "Predicted cover (%)",color = lab_trt <- "Position",fill = lab_trt ) )
+  labs(x = "Functional group", y = "Predicted cover (%)",color = lab_trt <- "Condition",fill = lab_trt ) )
 
 ## rough plots to look at the general effect of trampling
 full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
@@ -145,9 +145,9 @@ fg_line[,label := c("Tree","Shrub","Forb","Graminoid","Bryophyte")]
          legend.position = c(0.9,0.7),
          axis.title.x = element_blank())+
   
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Far","Trampled"))+
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs )+
   scale_fill_manual(values = trail_color, labels = trail_labs )+
-    labs(x = "", y = "Cover (%)",color = lab_trt <- "Position",fill = lab_trt ))
+    labs(x = "", y = "Cover (%)",color = lab_trt ,fill = lab_trt ))
 
 # export
 ggsave(file.path("figure","Fig_cover_sp.jpg"),figure_pred_sp,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
