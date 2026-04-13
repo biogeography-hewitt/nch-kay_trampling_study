@@ -95,13 +95,14 @@ preds_rich <- cbind(preds_rich,data_richness[,.N, by = .(treatment,site,trans.pa
 
 # plot of pred vs real div
 # added code for legend labels, Apr 12 2026
-data_richness$treatment <- factor(data_richness$treatment,
-                                  levels = c("far", "near"),
-                                  labels = c("reference", "trampled"))
-
-preds_rich$treatment <- factor(preds_rich$treatment,
-                               levels = c("far", "near"),
-                               labels = c("reference", "trampled"))
+# # remove (comment) to run the diversity segement, below 
+# data_richness$treatment <- factor(data_richness$treatment,
+#                                   levels = c("far", "near"),
+#                                   labels = c("reference", "trampled"))
+# 
+# preds_rich$treatment <- factor(preds_rich$treatment,
+#                                levels = c("far", "near"),
+#                                labels = c("reference", "trampled"))
 
 (rich_pred_plot <- ggplot(data_richness,aes (x = transect_pair, y = richness , fill = treatment,group =treatment))+
   theme_classic()+
@@ -110,7 +111,7 @@ preds_rich$treatment <- factor(preds_rich$treatment,
               position = position_jitterdodge(0.2,0.05,0.6))+
   geom_segment(data = preds_rich, aes(y = Q2.5, yend = Q97.5),position = position_dodge(0.6))+
   geom_point(position = position_dodge(0.6),data = preds_rich, aes(y = Estimate),pch = 21, size = 4)+
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Reference","Trampled"))+
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("reference","trampled"))+
   scale_fill_manual(values = trail_color)+
   labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Condition",fill = lab_trt)
 )
@@ -135,7 +136,6 @@ prior_shannon <- set_prior("normal(1,0.25)",class = "Intercept")
 prior_shannon <- c(prior_shannon,set_prior("student_t(3, 0.5, 0.5)", class = "sd", group = "trans.pair"))
 prior_shannon <- c(prior_shannon,set_prior("student_t(3, 0.5, 0.5)", class = "sd", group = "site"))
 prior_shannon <- c(prior_shannon,set_prior("student_t(3, 0.5, 0.5)", class = "sd", group = "transect"))
-
 
 model_shannon <-  brm(shannon ~ treatment  +(1 |site) +  (1+ treatment|trans.pair) +(1|transect) ,
                    data = data_richness,
@@ -169,24 +169,23 @@ marginal_distribution <- marginal_effect[,1]-marginal_effect[,2]
 summary(marginal_distribution) ## the average change between treatment
 quantile(marginal_distribution,probs = c(0.05,0.95))
 
+
 ## getting the conditional effect (site-specific)
 preds_shannon <- fitted(model_shannon,
                      newdata = data_richness[,.N, by = .(treatment,site,trans.pair,transect,altitude_scaled)],
                      re_formula = ~  (1 |site) + (1+ treatment|trans.pair)  +(1|transect))
 
-
 preds_shannon <- cbind(preds_shannon,data_richness[,.N, by = .(treatment,site,trans.pair,transect_pair,transect,altitude_scaled)])
 preds_shannon[,shannon := Estimate]
 
-## run the 1st plot first to get the correct labels 
-# added code for legend labels, Apr 12 2026
+### added code for legend labels, Apr 12 2026 - assumes you commented relabelling in richness mod and re-ran
 data_richness$treatment <- factor(data_richness$treatment,
                                   levels = c("far", "near"),
                                   labels = c("reference", "trampled"))
 
-preds_rich$treatment <- factor(preds_rich$treatment,
-                               levels = c("far", "near"),
-                               labels = c("reference", "trampled"))
+preds_shannon$treatment <- factor(preds_shannon$treatment,
+                                  levels = c("far", "near"),
+                                  labels = c("reference", "trampled"))
 # end of added code
 
 (shannon_pred_plot <- ggplot(data_richness,aes (x = transect_pair, y = shannon , fill = treatment,group =treatment))+
