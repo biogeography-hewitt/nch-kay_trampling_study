@@ -94,6 +94,15 @@ preds_rich <- fitted(model_rich,
 preds_rich <- cbind(preds_rich,data_richness[,.N, by = .(treatment,site,trans.pair,transect_pair,transect,altitude_scaled)])
 
 # plot of pred vs real div
+# added code for legend labels, Apr 12 2026
+data_richness$treatment <- factor(data_richness$treatment,
+                                  levels = c("far", "near"),
+                                  labels = c("reference", "trampled"))
+
+preds_rich$treatment <- factor(preds_rich$treatment,
+                               levels = c("far", "near"),
+                               labels = c("reference", "trampled"))
+
 (rich_pred_plot <- ggplot(data_richness,aes (x = transect_pair, y = richness , fill = treatment,group =treatment))+
   theme_classic()+
     theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1))+
@@ -170,6 +179,16 @@ preds_shannon <- cbind(preds_shannon,data_richness[,.N, by = .(treatment,site,tr
 preds_shannon[,shannon := Estimate]
 
 ## run the 1st plot first to get the correct labels 
+# added code for legend labels, Apr 12 2026
+data_richness$treatment <- factor(data_richness$treatment,
+                                  levels = c("far", "near"),
+                                  labels = c("reference", "trampled"))
+
+preds_rich$treatment <- factor(preds_rich$treatment,
+                               levels = c("far", "near"),
+                               labels = c("reference", "trampled"))
+# end of added code
+
 (shannon_pred_plot <- ggplot(data_richness,aes (x = transect_pair, y = shannon , fill = treatment,group =treatment))+
     theme_classic()+
     theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust = 1))+
