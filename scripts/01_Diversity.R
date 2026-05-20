@@ -112,7 +112,7 @@ preds_rich <- cbind(preds_rich,data_richness[,.N, by = .(treatment,site,trans.pa
   geom_segment(data = preds_rich, aes(y = Q2.5, yend = Q97.5),position = position_dodge(0.6))+
   geom_point(position = position_dodge(0.6),data = preds_rich, aes(y = Estimate),pch = 21, size = 4)+
   scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("reference","trampled"))+
-  scale_fill_manual(values = trail_color)+
+  scale_fill_manual(values = trail_color,labels = trail_labs)+
   labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Condition",fill = lab_trt)
 )
 
@@ -201,6 +201,14 @@ preds_shannon$treatment <- factor(preds_shannon$treatment,
 )
 
 ggsave(file.path("figure","Fig_Shannon_transect.jpg"),shannon_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
+
+ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("a)","b)"),nrow = 2,common.legend = T,legend = "bottom") 
+
+ggsave(file.path("figure","Fig_diversity_both.jpg"),
+       ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("a)","b)"),hjust = 0,nrow = 2,common.legend = T,legend = "bottom") ,
+       unit = "cm",width = 18,height = 19,dpi = 300)
+
+
 
 #### Model Richness per FG ####
 
