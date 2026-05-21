@@ -2,33 +2,37 @@
 # Compaction data
 # Goal: to analyse (with 2 Factor ANOVA) and visualize (boxplots, violinplots) the compaction values 
 # by treatment and site obtained in 2023 with soil penetrometer. Methods - see manuscript.
-# Script by Nina Hewitt, Nov 30 2025
+# Script: Nina Hewitt, Nov 30 2025
 # Sources: 
 # 1. Hewitt, N. Geog 374 materials 2017-2025; 
 # 2. Soetewey, Antoined (2026) Stats and R, https://statsandr.com/blog/two-way-anova-in-r/ 
-# Edited: Jan 2026 (NH)
-
-# note to self - to comment or uncomment: highlight chunk and press Cmd + Shift + C 
+# Edited: March 2026 to update treatment/condition labels (NH)
 
 #########################
 # clear workspace
 rm(list = ls())
 
+##### packages ####
+
 ## load libraries
-library(ggplot2)
+library(data.table) # faster data.frame
+library(ggplot2) # plots
 library(dplyr)
 library(tidyverse)
 
-# load data
-## Either use command (and adjust file location and name)
-# compaction.data <- read.csv(file = "./data/raw_data/data_2023 - Compaction475.csv") ## old file - adjust
-# site.data <- read.csv(file = "./data/raw_data/data_2023 - Site_data.csv")
+# BRING IN THE DATA
 
-# or use command:
-mydata <- read.csv(file.choose())
-# read csv "Compaction_2023_v2.csv" into R (has new single column for "compact_B_else_UB"); 
-# Measurements are in columns; sites are rows, UB = Unbrushed,
+## read the csv data file (ensure you are in the correct working directory
+mydata <-  fread(file.path("data","compaction_2023.csv")) # this command works if you have loaded the data.table library/package
+
+## otherwise load dataset with file.choose command
+# df <- read.csv(file.choose()) # compaction_2023.csv" ["Compaction_2023_v2.csv" in local drive]
+# Measurements are in columns; sites are rows, UB = Unbrushed, 
 # B = Brushed (using a paintbrush to remove top layer of any litter; or disturbed, loose soil if present)
+# compact_B_else_UB = contains brushed values except where only UB values were taken/required, since we 
+# took both where brushed (loose/unconsolidated debris) was present.
+## Note that this datafram has remove the 3 'NA' values (BT-11, plot 6 (big rock); and BT 15,16 (rocky))
+# where no measurements were taken.
 
 ## LOOK AT OUR DATA
 mydata          # look at all your data
@@ -39,7 +43,7 @@ str(mydata)     # look at the overall structure
 # change columns to AsFactor or numeric accordingly:
 mydata <- mydata %>%
   mutate(across(2:5, as.factor)) %>%
-  mutate(across(6:10, as.numeric))
+  mutate(across(6:8, as.numeric))
 
 # Display the structure of the modified data frame
 str(mydata)
@@ -62,7 +66,7 @@ mod <- aov(compact_B_else_UB ~ treatment * site,
            data = mydata
 )
 
-mod
+mod # display results
 
 ## Test for Normality with QQ-plot of residuals.
 plot(mod, which = 2) # looks fairly normal points follow straight line - diagonal. Some deviation at ends, but is expected
@@ -81,30 +85,31 @@ hist(mod$residuals) # relatively normal, some left skew, but minimal
 shapiro.test(mod$residuals) 
 # do not reject the null H that the residuals follow a normal distribution p=0.2894
 
-# verifyomogeneity of variances or homoscedasticity visually with plot() function:
-plot(mod, which = 3) # Spread of the residuals is relatively constant
-# but the red line is somewhat sloping (rather than perfectly horizontal and flat)
-# so while looks like constant variance assumption satisfied can test more formally with the Levene’s test
-# (also from the {car} package)
+# verify homogeneity of variances or homoscedasticity visually with plot() function:
+plot(mod, which = 3) # Spread of residuals is relatively constant
+# but red line is somewhat sloping (rather than completely horizontal and flat)
+# so while it looks like constant variance assumption reasonably satisfied can test 
+# more formally with the Levene’s test (also in the {car} package)
 
 leveneTest(mod)
-# We must reject the null hypothesis that the variances are equal (p-value = 3.488e-05 ***).
+# Result: must reject the null hypothesis that the variances are equal (p-value = 3.488e-05 ***).
 
-# Now run the model on log values. 
-# First, create and save model
+## Now run the model on log values. 
+
+## First, create and save model
 
 # Two-way ANOVA with interaction
 mod2 <- aov(log(compact_B_else_UB) ~ treatment * site,
            data = mydata
 )
 
-mod2 # should overwrite original
+mod2 
 
 # run Levene's test again:
 leveneTest(mod2)
 # after logging, is normal (p-value = 0.1385)
 
-## Use log values 
+## Therefore, use log values 
 
 ## you have already run the 2 way ANOVA procedure above; run again with log values.
 # print results
@@ -118,31 +123,32 @@ summary(mod2)
 #  Residuals      254 24.797   0.098                     
 
 # But, since this may be an unbalanced design (there are unequal numbers of subjects in each subgroup -- 
-# different sample sizes for site), and in which interaction is significant, should use Type 3 Anova:
+# different sample sizes for site), and in which interaction is significant, run Type 3 Anova:
 
-### Run a type 3 anova on the existing model, where "mod2" is the model
+### Type 3 anova on existing model, where "mod2" is the model
 Anova(mod2, type = "III") 
 # or same result for:
 Anova(mod2, type = 3)
 
-#Anova Table (Type III tests)
-#Response: log(compact_B_else_UB)
-#Sum Sq  Df  F value    Pr(>F)    
-# (Intercept)    16.2049   1 165.9909 < 2.2e-16 ***
-#  treatment       0.7294   1   7.4718 0.0067080 ** 
-#  site            5.5821   2  28.5893 6.334e-12 ***
-#  treatment:site  1.8211   2   9.3271 0.0001234 ***
+## USED THIS**
+# Anova Table (Type III tests)
+# Response: log(compact_B_else_UB)
+#                 Sum Sq  Df  F value    Pr(>F)    
+# (Intercept)     8.2722  1 84.7344  < 2.2e-16 ***
+#  treatment      0.7294  1  7.4718  0.0067080 ** 
+#  site           0.8108  2  4.1527  0.0168026 *  
+#  treatment:site 1.8211  2  9.3271  0.0001234 ***
 #  Residuals      24.7969 254 
 
-Anova(mod, type = "III") # unlogged values - since qq plot looks good and large sample (ignore Levene's test)
+Anova(mod, type = "III") # unlogged values - since qq plot looks good and large sample (if we ignore Levene's test)
 
 # > Anova(mod, type = "III") # unlogged values
 # Anova Table (Type III tests)
 # Response: compact_B_else_UB
 # Sum Sq  Df  F value    Pr(>F)    
-# (Intercept)    151.347   1 292.5114 < 2.2e-16 ***
-#   treatment        3.113   1   6.0169   0.01484 *  
-#   site            39.208   2  37.8893 3.978e-15 ***
+# (Intercept)     99.919   1 193.1150 < 2.2e-16 ***
+#  treatment        3.113   1   6.0169   0.01484 *  
+#  site             2.052   2   1.9827   0.13983    
 #   treatment:site  16.463   2  15.9093 3.093e-07 ***
 #   Residuals      131.421 254                       
 # ---
@@ -157,7 +163,7 @@ TukeyHSD(mod,
 
 ##Results: Fit: aov(formula = compact_B_else_UB ~ treatment * site, data = mydata)
 # $site
-# diff        lwr       upr     p adj
+# diff     lwr        upr     p adj
 # PR-BT 0.67277950  0.3817679 0.9637911 0.0000004
 # TM-BT 0.76890752  0.4996354 1.0381797 0.0000000
 # TM-PR 0.09612802 -0.1482343 0.3404903 0.6234658
@@ -175,6 +181,37 @@ TukeyHSD(mod2,
 # TM-BT 0.32047326  0.20350781 0.4374387 0.0000000
 # TM-PR 0.01021276 -0.09593244 0.1163580 0.9720377
 
+
+TukeyHSD(mod2,
+         which = "treatment:site"
+)
+
+#Results:
+# > TukeyHSD(mod2,
+#            +          which = "treatment:site"
+#            + )
+# Tukey multiple comparisons of means
+# 95% family-wise confidence level
+# Fit: aov(formula = log(compact_B_else_UB) ~ treatment * site, data = mydata)
+# 
+# $`treatment:site`
+
+# diff                                          lwr          upr     p adj
+# trampled:BT-reference:BT   0.222412694 -0.0112411489  0.45606654 0.0722703
+# reference:PR-reference:BT  0.217057375  0.0003543636  0.43376039 0.0493588
+# trampled:PR-reference:BT   0.630191135  0.4134881237  0.84689415 0.0000000
+# reference:TM-reference:BT  0.114164474 -0.0864635295  0.31479248 0.5767752
+# trampled:TM-reference:BT   0.752178756  0.5520996671  0.95225784 0.0000000
+# reference:PR-trampled:BT  -0.005355319 -0.2241829206  0.21347228 0.9999998
+# trampled:PR-trampled:BT    0.407778441  0.1889508395  0.62660604 0.0000029
+# reference:TM-trampled:BT  -0.108248220 -0.3111691895  0.09467275 0.6440216
+# trampled:TM-trampled:BT    0.529766062  0.3273877877  0.73214434 0.0000000
+# trampled:PR-reference:PR   0.413133760  0.2125057568  0.61376176 0.0000002
+# reference:TM-reference:PR -0.102892901 -0.2860403727  0.08025457 0.5905357
+# trampled:TM-reference:PR   0.535121381  0.3525753802  0.71766738 0.0000000
+# reference:TM-trampled:PR  -0.516026661 -0.6991741329 -0.33287919 0.0000000
+# trampled:TM-trampled:PR    0.121987621 -0.0605583800  0.30453362 0.3929451
+# trampled:TM-reference:TM   0.638014282  0.4748749453  0.80115362 0.0000000
 
 # ANOVA different method 
 mod3 <- lm(compact_B_else_UB ~ treatment * site,
@@ -201,9 +238,6 @@ boxplot(compact_B_else_UB ~ treatment,
 # with dotplot
 stripchart(data = mydata, compact_B_else_UB ~ treatment, vertical = TRUE, method = "jitter", pch = 16, col = 'purple', add = TRUE)
 
-## Nicer, but need to remove the 3 'NA' values from dataframe (BT-11, plot 6 (big rock); and BT 15,16 (rocky))
-# upload and start again with file saved as "Compaction_2023_v2.csv"
-# with ggplot
 ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
   geom_boxplot() +
   xlab("Condition") +
@@ -213,9 +247,8 @@ ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
     panel.background = element_blank(), # Optional: removes the background color
     axis.line = element_line(colour = "black")) # Optional: adds a black axis line)
 
-## Need to use dataframe without 'NA' values, _vw
 
-## Update, Dec 4, 2025 color code points by site and using viridis palette (for color-blindness): 
+## Color code points by site and using viridis palette (for color-blindness): 
 ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
   geom_boxplot() +
   xlab("Condition") +
@@ -232,97 +265,4 @@ ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
     axis.line = element_line(colour = "black")
   )
 
-# Stripcharts only
-
-# Create plot that contains one strip chart per variable:
-# Look at, e.g., compaction by treatment
-
-stripchart(compact_B_else_UB ~ treatment,
-           data = mydata,
-           main = 'Soil compaction levels by treatment',
-           xlab = 'Treatment', 
-           ylab = 'Penetration resistance (kg/cm^2)',
-           col = c('steelblue', 'purple'),
-           pch = 16,
-           method = 'jitter',
-           vertical = TRUE)
-
-
-## Stopped here.
-
 ###END####
-
-## additional notes for creating violinplots and stripcharts
-
-# View documentation on stripcharts
-
-?stripchart
-
-# a strip chart for each variable in a single plot:
-
-#create list of variables
-x <- list('Treatment' = mydata$treatment, 'Compaction' = mydata$compact_B_else_UB)
-
-# show x
-x
-
-# I got the full list. What could I have typed instead? Hint: see above
-
-# Create plot that contains one strip chart per variable
-
-# Look at, e.g., compaction by treatment, plot vertically
-
-stripchart(compact_B_else_UB ~ treatment,
-           data = mydata,
-           main = 'Compaction by condition',
-           xlab = 'Treatment', 
-           ylab = 'Compaction (kg/cm^sq)',
-           col = c('steelblue', 'purple'),
-           pch = 16,
-           method = 'jitter',
-           vertical = TRUE)
-
-# View documentation on violin plots
-
-?geom_violin
-
-## Create Basic violin plots
-
-library(ggplot2)
-# Basic violin plot
-q <- ggplot(mydata, aes(x=treatment, y=compact_B_else_UB)) + 
-  geom_violin()
-q
-
-# Rotate the violin plot
-q + coord_flip()
-
-# Set trim argument to FALSE
-ggplot(dat, aes(x=treatment, y=compact_B_else_UB)) + 
-  geom_violin(trim=FALSE)
-
-
-# violin plot with mean points
-q + stat_summary(fun=mean, geom="point", shape=23, size=2)
-
-# violin plot with median points
-q + stat_summary(fun=median, geom="point", size=2, color="red")
-
-# Is the data left or right skewed? Hint: if the median is lower
-# on the scale than the mean, they are right skewed, and visa versa
-
-## Customize legend, etc
-
-# Basic violin plot
-ggplot(mydata, aes(x=treatment, y=compact_B_else_UB)) + 
-  geom_violin(trim=FALSE, fill="gray") +
-  labs(title="Compaction by condition",x="Treatment", y = "Compaction (kg/cm^sq)") +
-  geom_boxplot(width=0.1) +
-  theme_classic()
-
-# Change color by groups
-dp <- ggplot(mydata, aes(x=treatment, y=compact_B_else_UB)) + 
-  geom_violin(trim=FALSE) +
-  geom_boxplot(width=0.1, fill="white") +
-  labs(title="Compaction by condition",x="Treatment", y = "Compaction (kg/cm^sq)")
-dp + theme_classic()
