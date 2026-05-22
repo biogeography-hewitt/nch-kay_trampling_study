@@ -613,7 +613,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
 ## Add dispersion structure using SE ellipses
 # stat_ellipse(aes(color = treatment), level = 0.68)
 
-ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
+(plot_nmds_export <- ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
   
   # SE ellipses (draw FIRST so points sit on top)
   stat_ellipse(aes(color = treatment),
@@ -638,7 +638,7 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
             vjust = -1,
             fontface = "bold") +
   
-  scale_color_manual(values = treat_colors) +
+  scale_color_manual(values =  c("#27A81E", "#DEBF50")) +
   scale_shape_manual(values = treat_shapes) +
   scale_fill_manual(values = site_palette) +
   
@@ -649,15 +649,18 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
     legend.position = "right"
   ) +
   labs(
-    title = "NMDS of vascular plant, bryophyte and crust beta diversity",
+    #title = "NMDS of vascular plant, bryophyte and crust beta diversity",
     x = "NMDS1",
     y = "NMDS2",
     color = "Condition",
     shape = "Condition",
     fill = "Site"
-  )
+  ))
 
 
+
+ggsave(file.path("figure","Fig_NMDS_colors.jpg"),plot_nmds_export,
+       unit = "mm", width = 180,height = 150,dpi = 250, scale =0.9)  
 
 #### END
 

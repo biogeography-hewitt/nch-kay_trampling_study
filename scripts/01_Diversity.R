@@ -83,7 +83,7 @@ marginal_effect <- fitted(model_rich,
 
 marginal_distribution <- marginal_effect[,1]-marginal_effect[,2]
 summary(marginal_distribution) ## the average change between treatment
-quantile(marginal_distribution,probs = c(0.05,0.95))
+quantile(marginal_distribution,probs = c(0.025,0.975))
 
 ## getting the model prediction back for every transect
 preds_rich <- fitted(model_rich,

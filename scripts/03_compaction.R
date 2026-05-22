@@ -247,22 +247,28 @@ ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
     panel.background = element_blank(), # Optional: removes the background color
     axis.line = element_line(colour = "black")) # Optional: adds a black axis line)
 
+site_palette <- c(
+  "TM" = "#E69F00",  # orange
+  "BT" = "#009E73",  # green
+  "PR" = "#0072B2"   # blue
+)
 
 ## Color code points by site and using viridis palette (for color-blindness): 
-ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
-  geom_boxplot() +
+(plot_compact_export <- ggplot(data = mydata, aes(x = treatment, y = compact_B_else_UB)) +
+  geom_boxplot(outliers = F) +
   xlab("Condition") +
   ylab(expression(Penetration~resistance~(kg/cm^{2}))) +
   geom_jitter(
     aes(color = site),
     width = 0.2,
     alpha = 0.7,
-    size = 1.5
+    size = 1.75
   ) +
-  scale_color_viridis_d(name = "Site") +   # viridis palette + legend title
+  scale_color_manual(breaks = c("TM","BT","PR"),values =site_palette)+   # viridis palette + legend title
   theme(
     panel.background = element_blank(),
     axis.line = element_line(colour = "black")
-  )
-
+  ))
+ggsave(file.path("figure","Fig_Compaction_boxplot.jpg"),plot_compact_export,
+       unit = "mm",width = 180,height = 120,dpi = 250,scale = 0.8)
 ###END####

@@ -6,6 +6,23 @@ library(stringr) # string manipulation
 library(vegan) # diversity indices computation
 library(ggpubr) # arrange several plots
 #### how does trampling affect species cover ? ####
+
+## reading the csv, cleaning some values
+fg_data <-  fread(file.path("data","species_lifeform.csv"))
+
+data_t <- fread(file.path("data","Trampling_Data_2024_Clean_nozeros.csv"))
+data_long <- melt(data_t,id.vars = colnames(data_t)[1:9]) 
+data_long[,value:=ifelse(value == "*","",value)]
+data_long[,value:=ifelse(value == "","0",value)]
+data_long[,value:=as.numeric(value)]
+data_long[,value:=ifelse(is.na(value),0 ,value)]
+data_long[,.N,by = variable]
+
+## removing "species" not of interest
+data_long <- data_long[!variable%in% c("soil","litter","rock","crust","bryosp2","bryosp1"),]
+data_long <- merge(data_long,fg_data,by.x = "variable",by.y = "species")
+
+
 data_cover <- data_long
 data_cover[,species := variable];data_cover[,variable := NULL] # renaming
 data_cover[,cover := value];data_cover[,value := NULL]
@@ -63,6 +80,7 @@ model_cover <- brm(formula_model_fg, # takes a while to compute
                    warmup = 200,
                    chains = 3,
                    cores = 3,
+                   control = list(adapt_delta = 0.9),
                    threads = threading(4),
                    file = file.path("model","ZIB_species_cover_model_fg"),
                    init = 0)
@@ -71,20 +89,58 @@ model_cover <- brm(formula_model_fg, # takes a while to compute
 ## distribution is fitting as well as possible, but the not-continuous cover is making it harder to see
 pp_check(model_cover)+coord_cartesian(xlim = c(0,0.5))
 summary(model_cover)
-plot(model_cover)## parameters converged because the caterpillar are fuzzy
+#plot(model_cover)## parameters converged because the caterpillar are fuzzy
 
 ## getting the marginal effect delta
 marginal_effect <- fitted(model_cover,
-                          newdata = data.table(expand.grid(treatment = c("far","near"),fg = c("","",""))),
+                          newdata = tmp_dummy <- data.table(expand.grid(treatment = c("far","near"),fg = c('bryophyte', 'conifer', 'forb', 'grass', 'shrub'))),
                           re_formula = NA,summary = T) 
-marginal_effect ## average species richness per treatment
-marginal_effect <- fitted(model_rich,
-                          newdata = data.table(treatment = c("far","near")),
+cbind(tmp_dummy,marginal_effect*100) ## average species richness per treatment
+marginal_effect <- fitted(model_cover,
+                          newdata = data.table(expand.grid(treatment = c("far","near"),fg = c('bryophyte', 'conifer', 'forb', 'grass', 'shrub'))),
                           re_formula = NA,summary = F) 
 
-marginal_distribution <- marginal_effect[,1]-marginal_effect[,2]
-summary(marginal_distribution) ## the average change between treatment
-quantile(marginal_distribution,probs = c(0.05,0.95))
+marginal_distribution_bryo <- marginal_effect[,1]-marginal_effect[,2]
+marginal_distribution_tree <- marginal_effect[,3]-marginal_effect[,4]
+marginal_distribution_forb <- marginal_effect[,5]-marginal_effect[,6]
+marginal_distribution_grass <- marginal_effect[,7]-marginal_effect[,8]
+marginal_distribution_shrub <- marginal_effect[,9]-marginal_effect[,10]
+
+for(i in list(marginal_distribution_tree,marginal_distribution_shrub,marginal_distribution_forb,marginal_distribution_grass,marginal_distribution_bryo)) {
+  print(mean(i)*100) ## the average change between treatment
+  print( quantile(i,probs = c(0.025,0.975))*100)
+  
+}
+
+
+## getting the raw draws from the model to compute delta predictions
+new_data_for_pred <- data_cover_trim[,.N ,by = .(treatment,species,species_order,fg,fg_order),]
+
+pred_sp <- data.table(fitted(model_cover,
+                             newdata =new_data_for_pred, # no dpar argument : the whole model prob * cover, dpar = "mu" cover, dpar= "zi" probability of absence 
+                             re_formula = ~ (1+treatment|species), summary = F) * 100)
+pred_sp <- t(pred_sp)
+pred_sp <- cbind(new_data_for_pred[,],pred_sp)
+
+pred_sp <- melt(pred_sp,id.vars = c("treatment","species","species_order","N","fg","fg_order"))
+pred_sp[,draws_id := variable ] ; pred_sp[,variable := NULL ]  
+pred_sp[,pred_cover := value ] ; pred_sp[,value := NULL ]  
+
+##helpful for the delta plot
+pred_sp_delta <- pred_sp[,.(delta_cover = diff(-pred_cover)),by = .(species,species_order,fg_order,draws_id,N)]
+pred_sp_summarized <- pred_sp_delta[,.(Estimate = mean(delta_cover),
+                                 Q2.5 = quantile(delta_cover,probs = 0.025),
+                                 Q97.5  = quantile(delta_cover,probs = 0.975),
+                                 prob_of_being_signif = mean(delta_cover<0)),by = .(species,species_order,fg_order,N)]
+pred_sp_summarized[,signif := ifelse(sign(Q2.5) == sign(Q97.5),"Credible","Non-credible")]
+pred_sp_summarized[,signif_2way := ifelse(sign(Q2.5) == sign(Q97.5) & sign(Estimate) == -1,"Decline",
+                                          ifelse(sign(Q2.5) == sign(Q97.5) & sign(Estimate) == 1,"Increase","Non signif"))]
+
+
+##helpful for the cover plot
+pred_sp <- pred_sp[,.(Estimate = mean(pred_cover),
+                      Q2.5 = quantile(pred_cover,probs = 0.025),
+                      Q97.5  = quantile(pred_cover,probs = 0.975)),by = .( treatment ,species, species_order,N,fg,fg_order)]
 
 
 ## rough plots to look at the effect of trampling per species
@@ -93,20 +149,20 @@ conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ 
 conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species),dpar = "hu")
 
 beautify_marginal_effect <- list(
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("Reference","Trampled") ),
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("reference","trampled") ),
   scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs ),
   scale_x_discrete(limits = c("conifer","shrub","forb","grass","bryophyte"),label =  c("Tree","Shrub","Forb","Graminoid","Bryophyte")),
   theme_classic()+theme(legend.position = c(0.7,0.8),legend.background = element_blank()),
   labs(x = "Functional group", y = "Predicted cover (%)",color = lab_trt <- "Condition",fill = lab_trt ) )
 
 ## rough plots to look at the general effect of trampling
-full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
-  beautify_marginal_effect+scale_y_continuous(labels = c("0","5","10","15")) # average of prob * cover
-cover_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "mu"),plot = F)[[1]]+
-  beautify_marginal_effect + labs( title = "Cover model")+scale_y_continuous(limits = c(0,0.2),labels = c("0","5","10","15","20")) # cover
-presence_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "zi"),plot = F)[[1]]+
+(full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
+  beautify_marginal_effect+scale_y_continuous(labels = c("0","5","10","15"))) # average of prob * cover
+(cover_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "mu"),plot = F)[[1]]+
+  beautify_marginal_effect + labs( title = "Cover model")+scale_y_continuous(limits = c(0,0.2),labels = c("0","5","10","15","20"))) # cover
+(presence_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA,dpar = "zi"),plot = F)[[1]]+
   beautify_marginal_effect  + labs( title = "Presence model", y = "Predicted probability \nof presence (%)") +
-  theme(legend.position = c(0.86,0.8))+scale_y_continuous(limits = c(0,1),transform = "reverse", labels = c("0.00","0.25","0.50","0.75","1.00")[5:1])# prob of absence
+  theme(legend.position = c(0.86,0.8))+scale_y_continuous(limits = c(0,1),transform = "reverse", labels = c("0.00","0.25","0.50","0.75","1.00")[5:1]))# prob of absence
 
 
 ggarrange(full_plot,cover_plot,presence_plot,nrow = 2,ncol = 2)
@@ -124,6 +180,14 @@ data_cover_trim[,species_order := as.character(species)]
 data_cover_trim[,species_order := str_to_title(species_order)]
 data_cover_trim[,species_order := paste0(substr(species_order,1,3)," ",substr(species_order,4,6))]
 data_cover_trim[,fg_order := factor(fg, levels = c("conifer","shrub","forb","grass","bryophyte")) ]
+
+pred_sp[,Estimate_near := mean(Estimate[treatment == "far"]),by =species ]
+pred_sp[,Estimate_near2 := (round(Estimate_near,5)/2) ,by =fg]
+pred_sp[,Estimate_near2 := str_pad(Estimate_near2,2,pad = "0")]
+pred_sp[,fg_order_2 := as.factor(paste0(10-as.numeric(fg_order),"_",Estimate_near2))]
+
+data_cover_trim_plot <- merge(data_cover_trim,pred_sp)
+
 
 ## dashed lines to divid by fg for plotting
 fg_line <- data_cover_trim[,.N,by = .(fg_order,species_order)][order(fg_order)]
@@ -152,29 +216,10 @@ fg_line[,label := c("Tree","Shrub","Forb","Graminoid","Bryophyte")]
 # export
 ggsave(file.path("figure","Fig_cover_sp.jpg"),figure_pred_sp,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
 
-## getting the raw draws from the model to compute delta predictions
-new_data_for_pred <- data_cover_trim[,.N ,by = .(treatment,species,species_order,fg,fg_order),]
 
-pred_sp <- data.table(fitted(model_cover,
-       newdata =new_data_for_pred, # no dpar argument : the whole model prob * cover, dpar = "mu" cover, dpar= "zi" probability of absence 
-       re_formula = ~ (1+treatment|species), summary = F) * 100)
-pred_sp <- t(pred_sp)
-pred_sp <- cbind(new_data_for_pred[,],pred_sp)
+ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figure_pred_sp,labels = c("a)","b)"),nrow = 2,heights = c(1,1.5)),
+       unit = "cm",width = 18,height = 18,dpi = 300,scale = 1.25)
 
-pred_sp <- melt(pred_sp,id.vars = c("treatment","species","species_order","N","fg","fg_order"))
-pred_sp[,draws_id := variable ] ; pred_sp[,variable := NULL ]  
-pred_sp[,pred_cover := value ] ; pred_sp[,value := NULL ]  
-
-pred_sp <- pred_sp[,.(delta_cover = diff(-pred_cover)),by = .(species,species_order,fg_order,draws_id,N)]
-pred_sp_summarized <- pred_sp[,.(Estimate = mean(delta_cover),
-                                 Q2.5 = quantile(delta_cover,probs = 0.025),
-                                 Q97.5  = quantile(delta_cover,probs = 0.975),
-                                 prob_of_being_signif = mean(delta_cover<0)),by = .(species,species_order,fg_order,N)]
-
-
-pred_sp_summarized[,signif := ifelse(sign(Q2.5) == sign(Q97.5),"Credible","Non-credible")]
-pred_sp_summarized[,signif_2way := ifelse(sign(Q2.5) == sign(Q97.5) & sign(Estimate) == -1,"Decline",
-                                             ifelse(sign(Q2.5) == sign(Q97.5) & sign(Estimate) == 1,"Increase","Non signif"))]
 
 (supp_delta_figure <- (ggplot(pred_sp_summarized,aes( x= reorder(species_order,Estimate), y= Estimate, ymin = Q2.5, ymax  = Q97.5,color = signif))+
     geom_hline(yintercept = 0, lty = 2, color = "grey20")+
@@ -187,7 +232,6 @@ pred_sp_summarized[,signif_2way := ifelse(sign(Q2.5) == sign(Q97.5) & sign(Estim
     labs( y= "Distribution of Δcover", color = "95% Credible interval \ncrossed")
   ))
 ggsave(file.path("figure","Fig_cover_supp_delta.jpg"),supp_delta_figure,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
-
 
 
 
