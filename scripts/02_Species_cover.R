@@ -217,7 +217,7 @@ fg_line[,label := c("Tree","Shrub","Forb","Graminoid","Bryophyte")]
 ggsave(file.path("figure","Fig_cover_sp.jpg"),figure_pred_sp,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
 
 
-ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figure_pred_sp,labels = c("a)","b)"),nrow = 2,heights = c(1,1.5)),
+ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figure_pred_sp,labels = c("(a)","(b)"),nrow = 2,heights = c(1,1.5)),
        unit = "cm",width = 18,height = 18,dpi = 300,scale = 1.25)
 
 
