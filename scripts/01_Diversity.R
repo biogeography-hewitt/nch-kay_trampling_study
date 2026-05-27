@@ -4,6 +4,7 @@ library(brms) # bayesian model fitting using stan
 library(ggplot2) # plots
 library(stringr) # string manipulation
 library(vegan) # diversity indices computation
+library(ggpubr) # publication ready figures
 #### how does trampling affect species richness ? ####
 ## Initial script by Jeremy Borderieux, UBC For, Dec 2025
 

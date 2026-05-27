@@ -112,6 +112,12 @@ for(i in list(marginal_distribution_tree,marginal_distribution_shrub,marginal_di
   
 }
 
+## trick for alphabetical order in plots
+data_cover_trim[,species_order := as.character(species)]
+data_cover_trim[,species_order := str_to_title(species_order)]
+data_cover_trim[,species_order := paste0(substr(species_order,1,3)," ",substr(species_order,4,6))]
+data_cover_trim[,fg_order := factor(fg, levels = c("conifer","shrub","forb","grass","bryophyte")) ]
+
 
 ## getting the raw draws from the model to compute delta predictions
 new_data_for_pred <- data_cover_trim[,.N ,by = .(treatment,species,species_order,fg,fg_order),]
@@ -144,10 +150,6 @@ pred_sp <- pred_sp[,.(Estimate = mean(pred_cover),
 
 
 ## rough plots to look at the effect of trampling per species
-conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species))
-conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species),dpar = "mu")
-conditional_effects(model_cover,effects = c("species:treatment"),re_formula = ~ (1 + treatment|species),dpar = "hu")
-
 beautify_marginal_effect <- list(
   scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("reference","trampled") ),
   scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs ),
@@ -175,12 +177,7 @@ ggsave(file.path("figure","Fig_cover_sp_marginal_effect.jpg"),
        ggarrange(cover_plot,presence_plot,nrow = 1,ncol =2,align = "hv"),
        unit = "cm",width = 18,height = 6,dpi = 300,scale = 1.125)
 
-## trick for alphabetical order
-data_cover_trim[,species_order := as.character(species)]
-data_cover_trim[,species_order := str_to_title(species_order)]
-data_cover_trim[,species_order := paste0(substr(species_order,1,3)," ",substr(species_order,4,6))]
-data_cover_trim[,fg_order := factor(fg, levels = c("conifer","shrub","forb","grass","bryophyte")) ]
-
+## trick for order in plot
 pred_sp[,Estimate_near := mean(Estimate[treatment == "far"]),by =species ]
 pred_sp[,Estimate_near2 := (round(Estimate_near,5)/2) ,by =fg]
 pred_sp[,Estimate_near2 := str_pad(Estimate_near2,2,pad = "0")]
@@ -217,7 +214,7 @@ fg_line[,label := c("Tree","Shrub","Forb","Graminoid","Bryophyte")]
 ggsave(file.path("figure","Fig_cover_sp.jpg"),figure_pred_sp,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
 
 
-ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figure_pred_sp,labels = c("(a)","(b)"),nrow = 2,heights = c(1,1.5)),
+ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figure_pred_sp,labels = c("(a)","(b)"),hjust = -0.1,nrow = 2,heights = c(1,1.5)),
        unit = "cm",width = 18,height = 18,dpi = 300,scale = 1.25)
 
 
