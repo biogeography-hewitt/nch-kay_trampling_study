@@ -205,7 +205,7 @@ ggsave(file.path("figure","Fig_Shannon_transect.jpg"),shannon_pred_plot,unit = "
 ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("a)","b)"),nrow = 2,common.legend = T,legend = "bottom") 
 
 ggsave(file.path("figure","Fig_diversity_both.jpg"),
-       ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("a)","b)"),hjust = 0,nrow = 2,common.legend = T,legend = "bottom") ,
+       ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("(a)","(b)"),hjust = 0,nrow = 2,common.legend = T,legend = "bottom") ,
        unit = "cm",width = 18,height = 19,dpi = 300)
 
 
