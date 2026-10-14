@@ -517,7 +517,7 @@ nmds_scores$plot_label <- paste0(meta$transect, "_", meta$quad)
 # NMDS plot: hulls by site, points by treatment, labels by plot
 # -------------------------------
 
-ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
+(suppl_hull_fig <- ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
   # Hulls for sites
   geom_polygon(data = hulls_site,
                aes(x = NMDS1, y = NMDS2, fill = site_name),
@@ -525,13 +525,13 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
   # Points colored/shaped by treatment
   geom_point(aes(color = treatment, shape = treatment), size = 3) +
   # Labels for each point (transect + quad)
-  geom_text_repel(aes(label = plot_label),
-                  size = 3,
-                  max.overlaps = 20) +  # adjust max-overlaps as needed
+  # geom_text_repel(aes(label = plot_label),
+  #                 size = 3,
+  #                 max.overlaps = 20) +  # adjust max-overlaps as needed
   # Color palettes
-  scale_fill_manual(values = site_palette) +
-  scale_color_manual(values = treat_colors) +
-  scale_shape_manual(values = treat_shapes) +
+  scale_fill_manual(values = site_palette ) +
+  scale_color_manual(values = treat_colors,labels = c("Reference","Trampled")) +
+  scale_shape_manual(values = treat_shapes,labels = c("Reference","Trampled")) +
   theme_minimal() +
   theme(
     panel.grid = element_blank(),
@@ -543,9 +543,11 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
     x = "NMDS1",
     y = "NMDS2",
     fill = "Site",
-    color = "Condition",
-    shape = "Condition"
-  )
+    color = "Treatment",
+    shape = "Treatment"
+  ))
+ggsave_many("Fig_NMDS_hull",suppl_hull_fig,
+            unit = "mm", width = 180,height = 150,dpi = 250, scale =0.9)  
 
 
 ## Centroids instead - USE THIS
