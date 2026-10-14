@@ -99,15 +99,15 @@
 <text x='224.66' y='149.81' text-anchor='middle' style='font-size: 8.80px; font-family: "Arial";' textLength='39.61px' lengthAdjust='spacingAndGlyphs'>Bryophyte</text>
 <text x='141.38' y='162.28' text-anchor='middle' style='font-size: 11.00px; font-family: "Arial";' textLength='82.00px' lengthAdjust='spacingAndGlyphs'>Functional group</text>
 <text transform='translate(13.36,72.03) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-family: "Arial";' textLength='96.62px' lengthAdjust='spacingAndGlyphs'>Predicted cover (%)</text>
-<text x='153.02' y='16.02' style='font-size: 11.00px; font-family: "Arial";' textLength='49.75px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
-<rect x='153.02' y='22.66' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<circle cx='161.66' cy='31.30' r='4.62' style='stroke-width: 0.71; stroke: #27A81E; fill: #27A81E;' />
-<line x1='154.74' y1='31.30' x2='168.57' y2='31.30' style='stroke-width: 1.07; stroke: #27A81E; stroke-linecap: butt;' />
-<rect x='153.02' y='39.94' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<circle cx='161.66' cy='48.58' r='4.62' style='stroke-width: 0.71; stroke: #DEBF50; fill: #DEBF50;' />
-<line x1='154.74' y1='48.58' x2='168.57' y2='48.58' style='stroke-width: 1.07; stroke: #DEBF50; stroke-linecap: butt;' />
-<text x='175.78' y='34.45' style='font-size: 8.80px; font-family: "Arial";' textLength='40.58px' lengthAdjust='spacingAndGlyphs'>Reference</text>
-<text x='175.78' y='51.73' style='font-size: 8.80px; font-family: "Arial";' textLength='36.81px' lengthAdjust='spacingAndGlyphs'>Trampled</text>
+<text x='154.74' y='16.02' style='font-size: 11.00px; font-family: "Arial";' textLength='49.75px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
+<rect x='154.74' y='22.66' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+<circle cx='163.38' cy='31.30' r='4.62' style='stroke-width: 0.71; stroke: #27A81E; fill: #27A81E;' />
+<line x1='156.46' y1='31.30' x2='170.29' y2='31.30' style='stroke-width: 1.07; stroke: #27A81E; stroke-linecap: butt;' />
+<rect x='154.74' y='39.94' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+<circle cx='163.38' cy='48.58' r='4.62' style='stroke-width: 0.71; stroke: #DEBF50; fill: #DEBF50;' />
+<line x1='156.46' y1='48.58' x2='170.29' y2='48.58' style='stroke-width: 1.07; stroke: #DEBF50; stroke-linecap: butt;' />
+<text x='177.49' y='34.45' style='font-size: 8.80px; font-family: "Arial";' textLength='37.14px' lengthAdjust='spacingAndGlyphs'>reference</text>
+<text x='177.49' y='51.73' style='font-size: 8.80px; font-family: "Arial";' textLength='34.20px' lengthAdjust='spacingAndGlyphs'>trampled</text>
 </g>
 </g>
 </svg>

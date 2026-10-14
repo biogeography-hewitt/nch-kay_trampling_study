@@ -530,8 +530,8 @@ nmds_scores$plot_label <- paste0(meta$transect, "_", meta$quad)
   #                 max.overlaps = 20) +  # adjust max-overlaps as needed
   # Color palettes
   scale_fill_manual(values = site_palette ) +
-  scale_color_manual(values = treat_colors,labels = c("Reference","Trampled")) +
-  scale_shape_manual(values = treat_shapes,labels = c("Reference","Trampled")) +
+  scale_color_manual(values = treat_colors,labels = c("reference","trampled")) +
+  scale_shape_manual(values = treat_shapes,labels = c("reference","trampled")) +
   theme_minimal() +
   theme(
     panel.grid = element_blank(),
@@ -641,8 +641,8 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
             vjust = -1,
             fontface = "bold") +
 
-  scale_color_manual(values =  treat_colors,labels = c("Reference","Trampled")) +
-  scale_shape_manual(values = treat_shapes,labels = c("Reference","Trampled")) +
+  scale_color_manual(values =  treat_colors,labels = c("reference","trampled")) +
+  scale_shape_manual(values = treat_shapes,labels = c("reference","trampled")) +
   scale_fill_manual(values = site_palette) +
   
   theme_minimal() +

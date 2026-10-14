@@ -266,7 +266,7 @@ site_palette <- c(
     size = 1.75
   ) +
     labs(x = "Treatment",color = "Site") +
-    scale_x_discrete(labels = c("Reference","Trampled"))+
+    scale_x_discrete(labels = c("reference","trampled"))+
   scale_color_manual(breaks = c("TM","BT","PR"),values =site_palette)+   # viridis palette + legend title
   theme(
     panel.background = element_blank(),

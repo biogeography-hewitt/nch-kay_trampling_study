@@ -152,7 +152,7 @@ pred_sp <- pred_sp[,.(Estimate = mean(pred_cover),
 
 ## rough plots to look at the effect of trampling per species
 beautify_marginal_effect <- list(
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("Reference","Trampled") ),
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("reference","trampled") ),
   scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs ),
   scale_x_discrete(limits = c("conifer","shrub","forb","grass","bryophyte"),label =  c("Tree","Shrub","Forb","Graminoid","Bryophyte")),
   theme_classic()+theme(legend.position = c(0.7,0.8),legend.background = element_blank()),
