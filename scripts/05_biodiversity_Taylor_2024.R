@@ -171,6 +171,7 @@ library(dplyr)
 library(ggplot2)
 library(vegan)
 library(permute)
+source(file.path("scripts","plot_saving_function.R"))
 
 # -------------------------------
 # 1. Load data
@@ -637,9 +638,9 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
             aes(label = site_name),
             vjust = -1,
             fontface = "bold") +
-  
-  scale_color_manual(values =  c("#27A81E", "#DEBF50")) +
-  scale_shape_manual(values = treat_shapes) +
+
+  scale_color_manual(values =  treat_colors,labels = c("Reference","Trampled")) +
+  scale_shape_manual(values = treat_shapes,labels = c("Reference","Trampled")) +
   scale_fill_manual(values = site_palette) +
   
   theme_minimal() +
@@ -652,14 +653,14 @@ ggplot(nmds_scores, aes(x = NMDS1, y = NMDS2)) +
     #title = "NMDS of vascular plant, bryophyte and crust beta diversity",
     x = "NMDS1",
     y = "NMDS2",
-    color = "Condition",
-    shape = "Condition",
+    color = "Treatment",
+    shape = "Treatment",
     fill = "Site"
   ))
 
 
 
-ggsave(file.path("figure","Fig_NMDS_colors.jpg"),plot_nmds_export,
+ggsave_many("Fig_NMDS_colors",plot_nmds_export,
        unit = "mm", width = 180,height = 150,dpi = 250, scale =0.9)  
 
 #### END
