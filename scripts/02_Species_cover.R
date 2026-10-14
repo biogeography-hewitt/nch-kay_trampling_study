@@ -5,6 +5,7 @@ library(ggplot2) # plots
 library(stringr) # string manipulation
 library(vegan) # diversity indices computation
 library(ggpubr) # arrange several plots
+source(file.path("scripts","plot_saving_function.R"))
 #### how does trampling affect species cover ? ####
 
 ## reading the csv, cleaning some values
@@ -151,11 +152,11 @@ pred_sp <- pred_sp[,.(Estimate = mean(pred_cover),
 
 ## rough plots to look at the effect of trampling per species
 beautify_marginal_effect <- list(
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("reference","trampled") ),
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs<- c("Reference","Trampled") ),
   scale_fill_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs ),
   scale_x_discrete(limits = c("conifer","shrub","forb","grass","bryophyte"),label =  c("Tree","Shrub","Forb","Graminoid","Bryophyte")),
   theme_classic()+theme(legend.position = c(0.7,0.8),legend.background = element_blank()),
-  labs(x = "Functional group", y = "Predicted cover (%)",color = lab_trt <- "Condition",fill = lab_trt ) )
+  labs(x = "Functional group", y = "Predicted cover (%)",color = lab_trt <- "Treatment",fill = lab_trt ) )
 
 ## rough plots to look at the general effect of trampling
 (full_plot <- plot(conditional_effects(model_cover,effects = c("fg:treatment"),re_formula = NA),plot = F)[[1]]+
@@ -169,11 +170,11 @@ beautify_marginal_effect <- list(
 
 ggarrange(full_plot,cover_plot,presence_plot,nrow = 2,ncol = 2)
 
-ggsave(file.path("figure","Fig_cover_sp_marginal_effect_full.jpg"),
+ggsave_many("Fig_cover_sp_marginal_effect_full",
        full_plot,
        unit = "cm",width = 9,height = 6,dpi = 300,scale = 1)
 
-ggsave(file.path("figure","Fig_cover_sp_marginal_effect.jpg"),
+ggsave_many("Fig_cover_sp_marginal_effect",
        ggarrange(cover_plot,presence_plot,nrow = 1,ncol =2,align = "hv"),
        unit = "cm",width = 18,height = 6,dpi = 300,scale = 1.125)
 
@@ -211,10 +212,10 @@ fg_line[,label := c("Tree","Shrub","Forb","Graminoid","Bryophyte")]
     labs(x = "", y = "Cover (%)",color = lab_trt ,fill = lab_trt ))
 
 # export
-ggsave(file.path("figure","Fig_cover_sp.jpg"),figure_pred_sp,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
+ggsave_many("Fig_cover_sp",figure_pred_sp,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
 
 
-ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figure_pred_sp,labels = c("(a)","(b)"),hjust = -0.1,nrow = 2,heights = c(1,1.5)),
+ggsave_many("Fig_cover_sp_combined",ggarrange(full_plot,figure_pred_sp,labels = c("(a)","(b)"),hjust = -0.1,nrow = 2,heights = c(1,1.5)),
        unit = "cm",width = 18,height = 18,dpi = 300,scale = 1.25)
 
 
@@ -228,7 +229,7 @@ ggsave(file.path("figure","Fig_cover_sp_combined.jpg"),ggarrange(full_plot,figur
     scale_color_manual(values = c("grey10","grey60"))+
     labs( y= "Distribution of Δcover", color = "95% Credible interval \ncrossed")
   ))
-ggsave(file.path("figure","Fig_cover_supp_delta.jpg"),supp_delta_figure,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
+ggsave_many("Fig_cover_supp_delta",supp_delta_figure,unit = "cm",width = 18,height = 12,dpi = 300,scale = 1.25)
 
 
 

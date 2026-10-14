@@ -5,6 +5,7 @@ library(ggplot2) # plots
 library(stringr) # string manipulation
 library(vegan) # diversity indices computation
 library(ggpubr) # publication ready figures
+source(file.path("scripts","plot_saving_function.R"))
 #### how does trampling affect species richness ? ####
 ## Initial script by Jeremy Borderieux, UBC For, Dec 2025
 
@@ -112,13 +113,13 @@ preds_rich <- cbind(preds_rich,data_richness[,.N, by = .(treatment,site,trans.pa
               position = position_jitterdodge(0.2,0.05,0.6))+
   geom_segment(data = preds_rich, aes(y = Q2.5, yend = Q97.5),position = position_dodge(0.6))+
   geom_point(position = position_dodge(0.6),data = preds_rich, aes(y = Estimate),pch = 21, size = 4)+
-  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("reference","trampled"))+
+  scale_color_manual(values = trail_color <- c("#27A81E", "#DEBF50"), labels = trail_labs <- c("Reference","Trampled"))+
   scale_fill_manual(values = trail_color,labels = trail_labs)+
-  labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Condition",fill = lab_trt)
+  labs(x = "Transect pair", y = "Species richness", color = lab_trt <- "Treatment",fill = lab_trt)
 )
 
 # export
-ggsave(file.path("figure","Fig_richness_transect.jpg"),rich_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
+ggsave_many("Fig_richness_transect",rich_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
 
 ggplot(data_richness,aes( x = treatment, y = richness,fill = site))+
   geom_violin()+
@@ -182,11 +183,11 @@ preds_shannon[,shannon := Estimate]
 ### added code for legend labels, Apr 12 2026 - assumes you commented relabelling in richness mod and re-ran
 data_richness$treatment <- factor(data_richness$treatment,
                                   levels = c("far", "near"),
-                                  labels = c("reference", "trampled"))
+                                  labels = c("Reference", "Trampled"))
 
 preds_shannon$treatment <- factor(preds_shannon$treatment,
                                   levels = c("far", "near"),
-                                  labels = c("reference", "trampled"))
+                                  labels = c("Reference", "Trampled"))
 # end of added code
 
 (shannon_pred_plot <- ggplot(data_richness,aes (x = transect_pair, y = shannon , fill = treatment,group =treatment))+
@@ -201,11 +202,11 @@ preds_shannon$treatment <- factor(preds_shannon$treatment,
     labs(x = "Transect pair", y = "Shannon diversity index", color = lab_trt,fill = lab_trt)
 )
 
-ggsave(file.path("figure","Fig_Shannon_transect.jpg"),shannon_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
+ggsave_many("Fig_Shannon_transect",shannon_pred_plot,unit = "cm",width = 18,height = 11,dpi = 300)
 
 ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("a)","b)"),nrow = 2,common.legend = T,legend = "bottom") 
 
-ggsave(file.path("figure","Fig_diversity_both.jpg"),
+ggsave_many("Fig_diversity_both",
        ggarrange(rich_pred_plot,shannon_pred_plot,labels = c("(a)","(b)"),hjust = 0,nrow = 2,common.legend = T,legend = "bottom") ,
        unit = "cm",width = 18,height = 19,dpi = 300)
 

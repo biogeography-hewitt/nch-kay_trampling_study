@@ -19,6 +19,7 @@ library(data.table) # faster data.frame
 library(ggplot2) # plots
 library(dplyr)
 library(tidyverse)
+source(file.path("scripts","plot_saving_function.R"))
 
 # BRING IN THE DATA
 
@@ -264,11 +265,13 @@ site_palette <- c(
     alpha = 0.7,
     size = 1.75
   ) +
+    labs(x = "Treatment",color = "Site") +
+    scale_x_discrete(labels = c("Reference","Trampled"))+
   scale_color_manual(breaks = c("TM","BT","PR"),values =site_palette)+   # viridis palette + legend title
   theme(
     panel.background = element_blank(),
     axis.line = element_line(colour = "black")
   ))
-ggsave(file.path("figure","Fig_Compaction_boxplot.jpg"),plot_compact_export,
+ggsave_many("Fig_Compaction_boxplot.jpg",plot_compact_export,
        unit = "mm",width = 180,height = 120,dpi = 250,scale = 0.8)
 ###END####
